@@ -17,5 +17,13 @@ const authLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
+// Health check 요청 제한: 1분당 10회
+const healthLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000,
+  max: 10,
+  message: { error: 'Health check 요청이 너무 많습니다.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
-module.exports = { apiLimiter, authLimiter };
+module.exports = { apiLimiter, authLimiter, healthLimiter };

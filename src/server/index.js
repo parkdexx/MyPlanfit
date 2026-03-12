@@ -3,7 +3,7 @@ const cors = require('cors');
 require('dotenv').config();
 
 const { testConnection } = require('./config/db');
-const { apiLimiter } = require('./middleware/rateLimiter');
+const { apiLimiter, healthLimiter } = require('./middleware/rateLimiter');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -12,8 +12,8 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// ── Health Check (rate limiter 적용 전) ──
-app.get('/api/health', async (req, res) => {
+// ── Health Check (전용 rate limiter 적용) ──
+app.get('/api/health', healthLimiter, async (req, res) => {
   const dbConnected = await testConnection();
   res.json({
     status: 'OK',
