@@ -13,6 +13,7 @@ const schema = `
 CREATE TABLE IF NOT EXISTS users (
   id INT AUTO_INCREMENT PRIMARY KEY,
   email VARCHAR(255) UNIQUE NOT NULL,
+  nickname VARCHAR(100) NULL,
   password_hash VARCHAR(255) NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -57,6 +58,18 @@ CREATE TABLE IF NOT EXISTS set_plans (
   order_index INT DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (exercise_plan_id) REFERENCES exercise_plans(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =============================================
+-- Email Verifications (이메일 인증)
+-- =============================================
+CREATE TABLE IF NOT EXISTS email_verifications (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  email VARCHAR(255) NOT NULL,
+  otp_code VARCHAR(10) NOT NULL,
+  expires_at TIMESTAMP NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_email (email)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =============================================
@@ -121,6 +134,25 @@ async function initDatabase() {
       console.error(`  ❌ 오류:`, error.message);
       console.error(`     SQL: ${statement.substring(0, 80)}...`);
     }
+  }
+
+  // Add Dummy User
+  try {
+    const bcrypt = require('bcrypt');
+    const dummyEmail = 'test@test.com';
+    const dummyPassword = '1234';
+    const hashedPassword = await bcrypt.hash(dummyPassword, 10);
+    
+    // Check if exists
+    const [existing] = await pool.query('SELECT id FROM users WHERE email = ?', [dummyEmail]);
+    if (existing.length === 0) {
+      await pool.query('INSERT INTO users (email, password_hash) VALUES (?, ?)', [dummyEmail, hashedPassword]);
+      console.log(`  ✅ 테스트용 계정 생성 완료 (Email: ${dummyEmail}, Password: ${dummyPassword})`);
+    } else {
+      console.log(`  ℹ️ 테스트용 계정이 이미 존재합니다. (Email: ${dummyEmail})`);
+    }
+  } catch (error) {
+    console.error('  ❌ 테스트 계정 생성 오류:', error.message);
   }
 
   console.log('\n✨ 데이터베이스 초기화 완료!');

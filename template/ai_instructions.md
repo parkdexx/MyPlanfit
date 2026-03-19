@@ -55,3 +55,6 @@ For multi-step tasks, state a brief plan:
 2. [Step] → verify: [check]
 3. [Step] → verify: [check]
 Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
+
+5. Project-Specific Conventions
+- `todo.md` 및 작업 목록에서 작업을 완료 표시할 때는 `[x]` 대신 `[o]`를 사용하십시오. (`[x]`는 실패나 취소의 의미로 보일 수 있기 때문입니다.)

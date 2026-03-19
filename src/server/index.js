@@ -27,7 +27,7 @@ app.get('/api/health', healthLimiter, async (req, res) => {
 app.use('/api', apiLimiter);
 
 // ── Routes (추후 추가) ──
-// app.use('/api/auth', require('./routes/auth'));
+app.use('/api/auth', require('./routes/auth'));
 // app.use('/api/plans', require('./routes/plans'));
 // app.use('/api/workout', require('./routes/workout'));
 
