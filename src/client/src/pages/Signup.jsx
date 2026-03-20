@@ -18,6 +18,7 @@ const Signup = () => {
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [timeLeft, setTimeLeft] = useState(300);
+  const [isSending, setIsSending] = useState(false);
 
   React.useEffect(() => {
     let timer;
@@ -46,6 +47,7 @@ const Signup = () => {
     }
 
     try {
+      setIsSending(true);
       const res = await fetch('http://localhost:5000/api/auth/send-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -59,6 +61,8 @@ const Signup = () => {
       setStep(1); // Proceed to OTP step
     } catch (err) {
       setErrorMsg(err.message);
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -136,7 +140,9 @@ const Signup = () => {
 
         {step === 0 && (
           <div style={styles.buttonWrapper}>
-            <Button onClick={handleSendCode}>인증번호 발송</Button>
+            <Button onClick={handleSendCode} disabled={isSending}>
+              {isSending ? '메일 전송 중...' : '인증번호 발송'}
+            </Button>
           </div>
         )}
 

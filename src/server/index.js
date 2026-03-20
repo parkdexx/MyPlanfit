@@ -26,10 +26,11 @@ app.get('/api/health', healthLimiter, async (req, res) => {
 // Rate Limiter는 health check 이후에 적용
 app.use('/api', apiLimiter);
 
-// ── Routes (추후 추가) ──
+// ── Routes ──
 app.use('/api/auth', require('./routes/auth'));
-// app.use('/api/plans', require('./routes/plans'));
-// app.use('/api/workout', require('./routes/workout'));
+app.use('/api/home', require('./routes/home'));
+app.use('/api/plans', require('./routes/plans'));
+app.use('/api/exercises', require('./routes/exercises'));
 
 // ── Start Server ──
 app.listen(PORT, async () => {

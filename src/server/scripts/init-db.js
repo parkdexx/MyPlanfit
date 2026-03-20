@@ -61,6 +61,17 @@ CREATE TABLE IF NOT EXISTS set_plans (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =============================================
+-- Dictionary: EXERCISE_DICTIONARY (운동 백과사전)
+-- =============================================
+CREATE TABLE IF NOT EXISTS exercise_dictionary (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL UNIQUE,
+  body_part VARCHAR(50) NOT NULL,
+  youtube_url VARCHAR(500),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =============================================
 -- Email Verifications (이메일 인증)
 -- =============================================
 CREATE TABLE IF NOT EXISTS email_verifications (
@@ -70,6 +81,18 @@ CREATE TABLE IF NOT EXISTS email_verifications (
   expires_at TIMESTAMP NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   INDEX idx_email (email)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =============================================
+-- Password Resets (비밀번호 재설정)
+-- =============================================
+CREATE TABLE IF NOT EXISTS password_resets (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  email VARCHAR(255) NOT NULL,
+  token VARCHAR(255) NOT NULL,
+  expires_at TIMESTAMP NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_token (token)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =============================================
@@ -153,6 +176,30 @@ async function initDatabase() {
     }
   } catch (error) {
     console.error('  ❌ 테스트 계정 생성 오류:', error.message);
+  }
+
+  // Add Dummy Dictionary
+  try {
+    const dummyExercises = [
+      { name: '벤치프레스', bodyPart: '가슴', url: 'https://youtube.com/watch?v=dlx123' },
+      { name: '푸시업', bodyPart: '가슴', url: 'https://youtube.com/watch?v=dlx124' },
+      { name: '스쿼트', bodyPart: '하체', url: 'https://youtube.com/watch?v=dlx125' },
+      { name: '레그프레스', bodyPart: '하체', url: 'https://youtube.com/watch?v=dlx126' },
+      { name: '풀업', bodyPart: '등', url: 'https://youtube.com/watch?v=dlx127' },
+      { name: '렛풀다운', bodyPart: '등', url: 'https://youtube.com/watch?v=dlx128' },
+      { name: '밀리터리 프레스', bodyPart: '어깨', url: 'https://youtube.com/watch?v=dlx129' },
+      { name: '바벨컬', bodyPart: '팔', url: 'https://youtube.com/watch?v=dlx130' }
+    ];
+
+    for (const ex of dummyExercises) {
+      await pool.query(
+        'INSERT IGNORE INTO exercise_dictionary (name, body_part, youtube_url) VALUES (?, ?, ?)',
+        [ex.name, ex.bodyPart, ex.url]
+      );
+    }
+    console.log(`  ✅ 기본 운동 사전 데이터 시딩 완료`);
+  } catch (error) {
+    console.error('  ❌ 사전 데이터 생성 오류:', error.message);
   }
 
   console.log('\n✨ 데이터베이스 초기화 완료!');

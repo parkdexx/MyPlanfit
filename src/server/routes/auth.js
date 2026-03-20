@@ -25,7 +25,7 @@ router.post('/login', async (req, res) => {
 
     // 이메일로 유저 찾기 (Prepared Statement로 SQL Injection 방어)
     const [users] = await pool.query('SELECT * FROM users WHERE email = ?', [email]);
-    
+
     if (users.length === 0) {
       return res.status(401).json({ error: '존재하지 않는 이메일이거나 비밀번호가 틀렸습니다.' });
     }
@@ -64,7 +64,7 @@ router.post('/login', async (req, res) => {
 router.post('/send-code', async (req, res) => {
   try {
     const { email } = req.body;
-    
+
     // 이메일 정규식 검사
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email || !emailRegex.test(email)) {
@@ -94,7 +94,7 @@ router.post('/send-code', async (req, res) => {
       subject: '[MyPlanfit] 회원가입 이메일 인증 번호',
       text: `안녕하세요!\n운동을 다시 즐겁게. MyPlanfit 입니다.\n\n회원가입을 위한 인증 번호는 아래와 같습니다.\n\n\n${otp}\n\n\nMyPlanfit 화면으로 돌아가, 인증 번호를 입력해 주세요.\n감사합니다.\n\n* 이 번호는 5분간 유효합니다.\n* 이 메일에 답장을 하시면 곤란합니다. 😢`
     };
-    
+
     await transporter.sendMail(mailOptions);
 
     res.json({ message: '인증 번호가 발송되었습니다. 메일함을 확인해주세요.' });
@@ -168,13 +168,101 @@ router.post('/signup', async (req, res) => {
       [email, nickname, hashedPassword]
     );
 
-    res.status(201).json({ 
+    res.status(201).json({
       message: '회원가입 절차가 끝났습니다. 로그인 화면으로 이동합니다!',
-      userId: result.insertId 
+      userId: result.insertId
     });
   } catch (error) {
     console.error('Signup Error:', error);
     res.status(500).json({ error: '회원가입 처리 중 데이터 오류가 발생했습니다.' });
+  }
+});
+
+// POST /api/auth/forgot-password
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: '이메일을 입력해주세요.' });
+    }
+
+    // 존재하는 사용자인지 확인
+    const [users] = await pool.query('SELECT id FROM users WHERE email = ?', [email]);
+    if (users.length === 0) {
+      return res.status(404).json({ error: '가입되지 않은 이메일 주소입니다.' });
+    }
+
+    // 랜덤 토큰 생성 (32바이트 헥스 스트링)
+    const crypto = require('crypto');
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1시간 후 만료
+
+    // 기존 발급 토큰 만료 처리 (혹은 덮어쓰기 위해 이전 내역들 삭제 처리해도 되지만, 여기서는 그냥 삽입)
+    await pool.query(
+      'INSERT INTO password_resets (email, token, expires_at) VALUES (?, ?, ?)',
+      [email, token, expiresAt]
+    );
+
+    // 이메일 발송
+    const resetUrl = `http://localhost:5173/reset-password?token=${token}`;
+    const mailOptions = {
+      from: process.env.SMTP_EMAIL,
+      to: email,
+      subject: '[MyPlanfit] 비밀번호 변경 안내',
+      text: `안녕하세요!\n운동을 다시 즐겁게. MyPlanfit 입니다.\n\n비밀번호 재설정을 위해 아래 링크를 클릭해주세요.\n\n\n${resetUrl}\n\n\n링크는 1시간 동안만 유효합니다.\n본인이 요청하지 않았다면, 무시하셔도 됩니다.\n감사합니다.\n\n이 메일에 답장을 하시면 곤란합니다. 😢`
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.json({ message: '비밀번호 재설정 링크가 이메일로 전송되었습니다.' });
+  } catch (error) {
+    console.error('Forgot Password Error:', error);
+    res.status(500).json({ error: '이메일 발송에 실패했습니다. 잠시 후 다시 시도해주세요.' });
+  }
+});
+
+// POST /api/auth/reset-password
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+
+    if (!token || !newPassword) {
+      return res.status(400).json({ error: '유효하지 않은 요청입니다.' });
+    }
+
+    if (newPassword.length < 4) {
+      return res.status(400).json({ error: '비밀번호는 최소 4자 이상이어야 합니다.' });
+    }
+
+    // 토큰 조회
+    const [records] = await pool.query(
+      'SELECT email, expires_at FROM password_resets WHERE token = ?',
+      [token]
+    );
+
+    if (records.length === 0) {
+      return res.status(400).json({ error: '유효하지 않거나 이미 사용된 링크입니다.' });
+    }
+
+    const { email, expires_at } = records[0];
+
+    // 만료 확인
+    if (new Date() > new Date(expires_at)) {
+      return res.status(400).json({ error: '해당 링크는 만료되었습니다. 다시 비밀번호 찾기를 진행해주세요.' });
+    }
+
+    // 비밀번호 업데이트
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await pool.query('UPDATE users SET password_hash = ? WHERE email = ?', [hashedPassword, email]);
+
+    // 사용된 토큰 삭제 (보안 상 1회용)
+    await pool.query('DELETE FROM password_resets WHERE email = ?', [email]);
+
+    res.json({ message: '비밀번호가 성공적으로 변경되었습니다. 새로운 비밀번호로 로그인해주세요.' });
+  } catch (error) {
+    console.error('Reset Password Error:', error);
+    res.status(500).json({ error: '비밀번호 변경 처리 중 오류가 발생했습니다.' });
   }
 });
 

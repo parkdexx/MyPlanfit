@@ -14,6 +14,8 @@ const Button = ({ children, variant = 'primary', style, ...props }) => {
     backgroundColor: isPrimary ? 'var(--primary-color)' : '#f2f4f6',
     color: isPrimary ? '#ffffff' : 'var(--text-main)',
     border: 'none',
+    opacity: props.disabled ? 0.6 : 1,
+    cursor: props.disabled ? 'not-allowed' : 'pointer',
     ...style
   };
 

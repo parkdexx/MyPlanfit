@@ -1,72 +1,149 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Button from '../components/Button';
 import { FiUser, FiSettings, FiLogOut } from 'react-icons/fi';
+import Calendar from '../components/Calendar';
+import WorkoutHistoryBoard from '../components/WorkoutHistoryBoard';
+import DayPlanSlider from '../components/DayPlanSlider';
 
 const Home = () => {
   const navigate = useNavigate();
-  const [selectedDate, setSelectedDate] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
-  // 팝업 외부 영역 클릭 시 닫히도록 처리하는 스니펫
+  // States for API data
+  const [dayPlans, setDayPlans] = useState([]);
+  const [nextPlanIndex, setNextPlanIndex] = useState(0);
+  const [checkedDates, setCheckedDates] = useState([]);
+  
+  // States for Calendar control
+  const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+  const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1);
+  const [selectedDate, setSelectedDate] = useState(null);
+  
+  // State for History
+  const [historyData, setHistoryData] = useState(null);
+
+  const token = localStorage.getItem('token');
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
         setIsMenuOpen(false);
       }
     };
-    
-    if (isMenuOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    if (isMenuOpen) document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isMenuOpen]);
 
-  // Mock Data
-  const dayPlans = ['전신 (월, 수, 금)', '상체 (화, 목)', '하체 (토)'];
-  const mockHistory = [
-    { name: '바벨컬', sets: [{ weight: 10, reps: 10, status: '완료' }, { weight: 9, reps: 10, status: '포기' }] },
-    { name: '해머컬', sets: [{ weight: 15, reps: 10, status: '완료' }] }
-  ];
+  // Fetch Day Plans
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        const res = await fetch('http://localhost:5000/api/home/day-plans', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setDayPlans(data.dayPlans || []);
+          setNextPlanIndex(data.nextPlanIndex || 0);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchPlans();
+  }, [token]);
+
+  // Fetch Calendar Data (checked dates) for current month
+  useEffect(() => {
+    const fetchCalendar = async () => {
+      try {
+        const res = await fetch(`http://localhost:5000/api/home/calendar?year=${currentYear}&month=${currentMonth}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setCheckedDates(data.checkedDates || []);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchCalendar();
+  }, [currentYear, currentMonth, token]);
+
+  // Fetch History Details when a date is clicked
+  useEffect(() => {
+    if (!selectedDate) {
+      setHistoryData(null);
+      return;
+    }
+
+    const fetchHistory = async () => {
+      try {
+        const res = await fetch(`http://localhost:5000/api/home/history?date=${selectedDate}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setHistoryData(data); // { dayName, exercises }
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchHistory();
+  }, [selectedDate, token]);
+
+  const handlePrevMonth = () => {
+    setCurrentMonth(prev => {
+      if (prev === 1) {
+        setCurrentYear(y => y - 1);
+        return 12;
+      }
+      return prev - 1;
+    });
+  };
+
+  const handleNextMonth = () => {
+    setCurrentMonth(prev => {
+      if (prev === 12) {
+        setCurrentYear(y => y + 1);
+        return 1;
+      }
+      return prev + 1;
+    });
+  };
+
+  const handleGoToToday = () => {
+    const today = new Date();
+    setCurrentYear(today.getFullYear());
+    setCurrentMonth(today.getMonth() + 1);
+  };
+
+  const handleSelectYear = (y) => {
+    setCurrentYear(parseInt(y, 10));
+  };
+
+  const handleSelectMonth = (m) => {
+    setCurrentMonth(parseInt(m, 10));
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     navigate('/login');
   };
 
-  const handleStartWorkout = () => {
-    navigate('/workout');
+  const handleStartWorkout = (planId) => {
+    navigate(`/workout?planId=${planId}`);
   };
 
   const handleDayPlanSetup = () => {
-    navigate('/plan/setup');
+    navigate('/plan/list');
   };
 
-  const renderCalendar = () => {
-    const days = Array.from({ length: 30 }, (_, i) => i + 1);
-    const checkedDays = [5, 6, 8, 12]; // Mock completed days
-    
-    return (
-      <div style={styles.calendarGrid}>
-        {days.map(day => (
-          <div 
-            key={day} 
-            style={{
-              ...styles.calendarDay,
-              ...(checkedDays.includes(day) ? styles.calendarDayChecked : {}),
-              ...(selectedDate === day ? styles.calendarDaySelected : {})
-            }}
-            onClick={() => setSelectedDate(selectedDate === day ? null : day)}
-          >
-            {day}
-          </div>
-        ))}
-      </div>
-    );
+  const handleDateClick = (dateStr) => {
+    setSelectedDate(prev => prev === dateStr ? null : dateStr);
   };
 
   return (
@@ -105,46 +182,35 @@ const Home = () => {
         <button style={styles.setupButton} onClick={handleDayPlanSetup}>설정</button>
       </div>
 
-      <div style={styles.planSelector}>
-        <p style={styles.sectionTitle}>다음에 진행할 운동</p>
-        <div style={styles.planCard}>
-          <h3 style={styles.planName}>{dayPlans[0]}</h3>
-          <Button onClick={handleStartWorkout} style={{marginTop: '16px'}}>운동 시작</Button>
-        </div>
-      </div>
+      <DayPlanSlider 
+        plans={dayPlans} 
+        nextPlanIndex={nextPlanIndex} 
+        onStartWorkout={handleStartWorkout} 
+      />
 
       <div style={styles.calendarSection}>
         <h3 style={styles.sectionTitle}>운동 기록</h3>
-        {renderCalendar()}
+        <Calendar 
+          year={currentYear} 
+          month={currentMonth} 
+          checkedDates={checkedDates}
+          selectedDate={selectedDate}
+          onDateClick={handleDateClick}
+          onPrevMonth={handlePrevMonth}
+          onNextMonth={handleNextMonth}
+          onGoToToday={handleGoToToday}
+          onSelectYear={handleSelectYear}
+          onSelectMonth={handleSelectMonth}
+        />
+        
+        {selectedDate && historyData && (
+          <WorkoutHistoryBoard 
+            date={selectedDate} 
+            data={historyData} 
+            onClose={() => setSelectedDate(null)}
+          />
+        )}
       </div>
-
-      {selectedDate && (
-        <div style={styles.historySection}>
-          <div style={styles.historyHeader}>
-            <h4 style={styles.historyTitle}>10월 {selectedDate}일 운동 이력</h4>
-            <button style={styles.closeButton} onClick={() => setSelectedDate(null)}>✕</button>
-          </div>
-          
-          <div style={styles.historyContent}>
-            {mockHistory.map((ex, idx) => (
-              <div key={idx} style={styles.historyExercise}>
-                <div style={styles.historyExName}>{ex.name}</div>
-                {ex.sets.map((set, sIdx) => (
-                  <div key={sIdx} style={styles.historySet}>
-                    <span>ㄴ SET {sIdx + 1} : {set.weight}kg / {set.reps}회</span>
-                    <span style={{
-                      color: set.status === '완료' ? 'var(--success)' : 'var(--text-secondary)',
-                      fontWeight: '600'
-                    }}>
-                      ({set.status})
-                    </span>
-                  </div>
-                ))}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 };
@@ -184,6 +250,8 @@ const styles = {
     backgroundColor: '#f2f4f6',
     color: 'var(--text-main)',
     transition: 'background-color 0.2s',
+    border: 'none',
+    cursor: 'pointer'
   },
   dropdownMenu: {
     position: 'absolute',
@@ -211,6 +279,9 @@ const styles = {
     borderRadius: '12px',
     width: '100%',
     transition: 'background-color 0.1s',
+    border: 'none',
+    backgroundColor: 'transparent',
+    cursor: 'pointer'
   },
   header: {
     display: 'flex',
@@ -222,11 +293,15 @@ const styles = {
     fontSize: '24px',
     fontWeight: '700',
     color: 'var(--text-main)',
+    margin: 0
   },
   setupButton: {
     fontSize: '14px',
     color: 'var(--primary-color)',
     fontWeight: '600',
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer'
   },
   sectionTitle: {
     fontSize: '16px',
@@ -234,91 +309,8 @@ const styles = {
     color: 'var(--text-secondary)',
     marginBottom: '12px',
   },
-  planSelector: {
-    marginBottom: '32px',
-  },
-  planCard: {
-    backgroundColor: '#f2f4f6',
-    borderRadius: '16px',
-    padding: '20px',
-  },
-  planName: {
-    fontSize: '20px',
-    fontWeight: '700',
-    color: 'var(--text-main)',
-  },
   calendarSection: {
     marginBottom: '24px',
-  },
-  calendarGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(7, 1fr)',
-    gap: '8px',
-  },
-  calendarDay: {
-    aspectRatio: '1',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: '50%',
-    fontSize: '14px',
-    color: 'var(--text-main)',
-    cursor: 'pointer',
-    transition: 'all 0.2s',
-  },
-  calendarDayChecked: {
-    backgroundColor: 'rgba(40, 40, 140, 0.1)',
-    color: 'var(--primary-color)',
-    fontWeight: '700',
-    border: '2px solid var(--primary-color)',
-  },
-  calendarDaySelected: {
-    backgroundColor: 'var(--primary-color)',
-    color: '#ffffff',
-  },
-  historySection: {
-    backgroundColor: '#f9fafb',
-    borderRadius: '16px',
-    padding: '20px',
-    border: '1px solid var(--border-color)',
-    animation: 'fadeIn 0.2s ease-in-out',
-  },
-  historyHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '16px',
-  },
-  historyTitle: {
-    fontSize: '16px',
-    fontWeight: '700',
-    color: 'var(--text-main)',
-  },
-  closeButton: {
-    fontSize: '16px',
-    color: 'var(--text-secondary)',
-    fontWeight: '600',
-  },
-  historyContent: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '16px',
-  },
-  historyExercise: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '6px',
-  },
-  historyExName: {
-    fontSize: '16px',
-    fontWeight: '700',
-    color: 'var(--text-main)',
-  },
-  historySet: {
-    fontSize: '14px',
-    color: 'var(--text-secondary)',
-    display: 'flex',
-    justifyContent: 'space-between',
   }
 };
 

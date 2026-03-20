@@ -5,12 +5,40 @@ import Button from '../components/Button';
 import AuthHeader from '../components/AuthHeader';
 
 const ForgotPassword = () => {
+  const [email, setEmail] = React.useState('');
+  const [isSending, setIsSending] = React.useState(false);
+  const [errorMsg, setErrorMsg] = React.useState('');
+  const [successMsg, setSuccessMsg] = React.useState('');
+
   const navigate = useNavigate();
 
-  const handleReset = (e) => {
+  const handleReset = async (e) => {
     e.preventDefault();
-    alert('비밀번호 재설정 메일이 발송되었습니다. (Mock)');
-    navigate('/login');
+    setErrorMsg('');
+    setSuccessMsg('');
+
+    if (!email) {
+      setErrorMsg('이메일을 입력해주세요.');
+      return;
+    }
+
+    try {
+      setIsSending(true);
+      const res = await fetch('http://localhost:5000/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      setSuccessMsg(data.message || '비밀번호 재설정 메일이 발송되었습니다.');
+    } catch (err) {
+      setErrorMsg(err.message);
+    } finally {
+      setIsSending(false);
+    }
   };
 
   return (
@@ -18,15 +46,23 @@ const ForgotPassword = () => {
       <AuthHeader title="비밀번호 찾기" description="가입하신 이메일 주소를 입력해 주세요." />
 
       <form onSubmit={handleReset} style={styles.formContainer}>
+        {errorMsg && <div style={styles.errorAlert}>{errorMsg}</div>}
+        {successMsg && <div style={styles.successAlert}>{successMsg}</div>}
+
         <Input 
           label="이메일" 
           type="email" 
           placeholder="이메일을 입력해주세요" 
           required 
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          disabled={isSending}
         />
         
         <div style={styles.buttonWrapper}>
-          <Button type="submit">재설정 메일 받기</Button>
+          <Button type="submit" disabled={isSending}>
+            {isSending ? '전송 중...' : '재설정 메일 받기'}
+          </Button>
         </div>
       </form>
 
@@ -49,6 +85,28 @@ const styles = {
   formContainer: {
     display: 'flex',
     flexDirection: 'column',
+  },
+  errorAlert: {
+    backgroundColor: '#fff0f0',
+    color: 'var(--danger)',
+    padding: '12px',
+    borderRadius: '8px',
+    fontSize: '14px',
+    fontWeight: '600',
+    marginBottom: '16px',
+    textAlign: 'center',
+    border: '1px solid #ffcccc'
+  },
+  successAlert: {
+    backgroundColor: '#f0fdf4',
+    color: '#16a34a',
+    padding: '12px',
+    borderRadius: '8px',
+    fontSize: '14px',
+    fontWeight: '600',
+    marginBottom: '16px',
+    textAlign: 'center',
+    border: '1px solid #bbf7d0'
   },
   buttonWrapper: {
     marginTop: '24px',

@@ -3,8 +3,10 @@ import Layout from './components/Layout';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import Home from './pages/Home';
-import PlanSetup from './pages/PlanSetup';
+import PlanList from './pages/PlanList';
+import PlanEditor from './pages/PlanEditor';
 import WorkoutProgress from './pages/WorkoutProgress';
 import NotFound from './pages/NotFound';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -17,7 +19,9 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/plan/setup" element={<ProtectedRoute><PlanSetup /></ProtectedRoute>} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/plan/list" element={<ProtectedRoute><PlanList /></ProtectedRoute>} />
+          <Route path="/plan/editor/:id" element={<ProtectedRoute><PlanEditor /></ProtectedRoute>} />
           <Route path="/workout" element={<ProtectedRoute><WorkoutProgress /></ProtectedRoute>} />
           <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />

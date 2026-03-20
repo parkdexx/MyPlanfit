@@ -1,10 +1,10 @@
 const rateLimit = require('express-rate-limit');
 
-// 일반 API 요청 제한: 20초당 1회
+// 일반 API 요청 제한
 const apiLimiter = rateLimit({
-  windowMs: 1 * 20 * 1000,
-  max: 1,
-  message: { error: '요청이 너무 많습니다. 20초 후 다시 시도해주세요.' },
+  windowMs: 1 * 60 * 1000,
+  max: 60,
+  message: { error: '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.' },
   standardHeaders: true,
   legacyHeaders: false,
 });
