@@ -6,6 +6,21 @@ const authMiddleware = require('../middleware/auth');
 // 토큰 인증이 필요한 라우터
 router.use(authMiddleware);
 
+// GET /api/home/profile
+router.get('/profile', async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const [users] = await pool.query('SELECT nickname, email FROM users WHERE id = ?', [userId]);
+    if (users.length === 0) {
+      return res.status(404).json({ error: '사용자를 찾을 수 없습니다.' });
+    }
+    res.json(users[0]);
+  } catch (error) {
+    console.error('Profile Route Error:', error);
+    res.status(500).json({ error: '프로필 정보를 불러오지 못했습니다.' });
+  }
+});
+
 // GET /api/home/day-plans
 router.get('/day-plans', async (req, res) => {
   try {
@@ -28,20 +43,34 @@ router.get('/day-plans', async (req, res) => {
       [userId]
     );
 
+    const dayPlanIds = dayPlans.map(dp => dp.id);
+    const [exercisePlans] = await pool.query(
+      'SELECT day_plan_id, name FROM exercise_plans WHERE day_plan_id IN (?) ORDER BY order_index ASC, id ASC',
+      [dayPlanIds]
+    );
+
+    // 각 dayPlan에 exercise_names 배열 추가
+    const dayPlansWithExercises = dayPlans.map(dp => {
+      const exercises = exercisePlans
+        .filter(ex => ex.day_plan_id === dp.id)
+        .map(ex => ex.name);
+      return { ...dp, exercises };
+    });
+
     let nextPlanIndex = 0;
     
     // 만약 예전에 한 적이 있다면,
     if (histories.length > 0 && histories[0].day_plan_id) {
       const lastPlanId = histories[0].day_plan_id;
-      const lastIndex = dayPlans.findIndex(p => p.id === lastPlanId);
+      const lastIndex = dayPlansWithExercises.findIndex(p => p.id === lastPlanId);
       
       // 방금 전 했던 루틴의 다음 루틴 (순환)
       if (lastIndex !== -1) {
-        nextPlanIndex = (lastIndex + 1) % dayPlans.length;
+        nextPlanIndex = (lastIndex + 1) % dayPlansWithExercises.length;
       }
     }
 
-    res.json({ dayPlans, nextPlanIndex });
+    res.json({ dayPlans: dayPlansWithExercises, nextPlanIndex });
   } catch (error) {
     console.error('Day Plans Route Error:', error);
     res.status(500).json({ error: '플랜 목록을 불러오지 못했습니다.' });

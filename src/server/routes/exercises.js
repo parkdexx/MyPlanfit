@@ -12,8 +12,8 @@ router.get('/', authMiddleware, async (req, res) => {
     const params = [];
 
     if (target) {
-      query += ' WHERE body_part = ?';
-      params.push(target);
+      query += ' WHERE body_part LIKE ?';
+      params.push(`%${target}%`);
     }
     
     query += ' ORDER BY name ASC';

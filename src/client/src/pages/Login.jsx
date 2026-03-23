@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import Input from '../components/Input';
 import Button from '../components/Button';
 import AuthHeader from '../components/AuthHeader';
+import Footer from '../components/Footer';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -114,6 +115,7 @@ const Login = () => {
         <span style={styles.divider}>|</span>
         <Link to="/signup" style={styles.link}>처음이신가요?</Link>
       </div>
+      <Footer />
     </div>
   );
 };

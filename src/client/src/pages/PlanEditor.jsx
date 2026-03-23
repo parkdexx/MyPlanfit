@@ -13,6 +13,29 @@ const PlanEditor = () => {
   const [showSelector, setShowSelector] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef(null);
+  const editorRef = useRef(null);
+
+  const [scrollToExerciseId, setScrollToExerciseId] = useState(null);
+  const [scrollToBottom, setScrollToBottom] = useState(false);
+
+  useEffect(() => {
+    if (scrollToBottom) {
+      setTimeout(() => {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        if (editorRef.current) {
+          editorRef.current.scrollTo({ top: editorRef.current.scrollHeight, behavior: 'smooth' });
+        }
+      }, 100);
+      setScrollToBottom(false);
+    }
+    if (scrollToExerciseId) {
+      setTimeout(() => {
+        const btn = document.getElementById(`add-set-btn-${scrollToExerciseId}`);
+        if (btn) btn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+      setScrollToExerciseId(null);
+    }
+  }, [plan, scrollToBottom, scrollToExerciseId]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -94,6 +117,7 @@ const PlanEditor = () => {
         })
       });
       if (res.ok) {
+        setScrollToExerciseId(exerciseId);
         fetchPlan();
       }
     } catch (err) {
@@ -150,6 +174,7 @@ const PlanEditor = () => {
         })
       });
       if (res.ok) {
+        setScrollToBottom(true);
         fetchPlan();
       }
     } catch (err) {
@@ -248,7 +273,7 @@ const PlanEditor = () => {
       </div>
 
       {/* Editor Content */}
-      <div style={styles.editorArea}>
+      <div style={styles.editorArea} ref={editorRef}>
         {plan.exercises && plan.exercises.length === 0 ? (
           <div style={styles.emptyCard}>
             아직 추가된 운동이 없습니다. <br />아래 + 버튼을 눌러 운동 종목을 추가해보세요.
@@ -300,7 +325,11 @@ const PlanEditor = () => {
                 ))}
               </div>
 
-              <button style={styles.addSetBtn} onClick={() => handleAddSet(ex.id)}>
+              <button 
+                id={`add-set-btn-${ex.id}`}
+                style={styles.addSetBtn} 
+                onClick={() => handleAddSet(ex.id)}
+              >
                 + 세트 추가
               </button>
             </div>

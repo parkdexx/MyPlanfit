@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import Input from '../components/Input';
 import Button from '../components/Button';
 import AuthHeader from '../components/AuthHeader';
+import Footer from '../components/Footer';
 
 const ResetPassword = () => {
   const navigate = useNavigate();
@@ -99,6 +100,7 @@ const ResetPassword = () => {
       <div style={styles.linkContainer}>
         <Link to="/login" style={styles.link}>로그인 화면으로 돌아가기</Link>
       </div>
+      <Footer />
     </div>
   );
 };

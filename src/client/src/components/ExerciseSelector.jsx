@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FiSearch, FiPlayCircle } from 'react-icons/fi';
+import { FaYoutube } from 'react-icons/fa';
 
 const ExerciseSelector = ({ onClose, onSelect }) => {
   const [exercises, setExercises] = useState([]);
@@ -25,7 +26,7 @@ const ExerciseSelector = ({ onClose, onSelect }) => {
     fetchExercises();
   }, [filter, token]);
 
-  const bodyParts = ['전체', '가슴', '등', '하체', '어깨', '팔', '코어', '유산소'];
+  const bodyParts = ['전체', '가슴', '등', '어깨', '유산소', '전신', '코어', '팔', '하체'];
 
   return (
     <div style={styles.overlay}>
@@ -68,7 +69,10 @@ const ExerciseSelector = ({ onClose, onSelect }) => {
                       style={styles.actionBtnOutline} 
                       onClick={(e) => { e.stopPropagation(); window.open(ex.youtube_url, '_blank'); }}
                     >
-                       영상보기
+                       <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                         <FaYoutube style={{ color: '#FF0000', fontSize: '18px' }} />
+                         <span>영상보기</span>
+                       </div>
                     </button>
                   )}
                   <button style={styles.actionBtnPrimary} onClick={() => onSelect(ex)}>

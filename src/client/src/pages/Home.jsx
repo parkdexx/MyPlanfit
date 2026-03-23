@@ -4,6 +4,7 @@ import { FiUser, FiSettings, FiLogOut } from 'react-icons/fi';
 import Calendar from '../components/Calendar';
 import WorkoutHistoryBoard from '../components/WorkoutHistoryBoard';
 import DayPlanSlider from '../components/DayPlanSlider';
+import Footer from '../components/Footer';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -23,7 +24,28 @@ const Home = () => {
   // State for History
   const [historyData, setHistoryData] = useState(null);
 
+  // State for User Profile
+  const [userProfile, setUserProfile] = useState({ nickname: '', email: '' });
+
   const token = localStorage.getItem('token');
+
+  // Fetch User Profile
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await fetch('http://localhost:5000/api/home/profile', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setUserProfile({ nickname: data.nickname, email: data.email });
+        }
+      } catch (err) {
+        console.error('Failed to fetch profile', err);
+      }
+    };
+    if (token) fetchProfile();
+  }, [token]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -160,6 +182,11 @@ const Home = () => {
           
           {isMenuOpen && (
             <div style={styles.dropdownMenu}>
+              <div style={styles.profileInfo}>
+                <div style={styles.profileNickname}>{userProfile.nickname}</div>
+                <div style={styles.profileEmail}>{userProfile.email}</div>
+              </div>
+              <div style={styles.menuDivider}></div>
               <button 
                 style={styles.menuItem} 
                 onClick={() => alert('개인 정보 설정 기능은 추후 개발 예정입니다.')}
@@ -211,6 +238,7 @@ const Home = () => {
           />
         )}
       </div>
+      <Footer />
     </div>
   );
 };
@@ -282,6 +310,32 @@ const styles = {
     border: 'none',
     backgroundColor: 'transparent',
     cursor: 'pointer'
+  },
+  profileInfo: {
+    padding: '8px 16px 12px 16px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '4px',
+  },
+  profileNickname: {
+    fontSize: '14px',
+    fontWeight: '700',
+    color: 'var(--text-main)',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  profileEmail: {
+    fontSize: '12px',
+    color: 'var(--text-secondary)',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  menuDivider: {
+    height: '1px',
+    backgroundColor: 'var(--border-color)',
+    margin: '4px 8px',
   },
   header: {
     display: 'flex',

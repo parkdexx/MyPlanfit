@@ -31,6 +31,7 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/home', require('./routes/home'));
 app.use('/api/plans', require('./routes/plans'));
 app.use('/api/exercises', require('./routes/exercises'));
+app.use('/api/workout', require('./routes/workout'));
 
 // ── Start Server ──
 app.listen(PORT, async () => {

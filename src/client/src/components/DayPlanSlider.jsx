@@ -1,5 +1,47 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Button from './Button';
+
+const ExerciseText = ({ exercises }) => {
+  const containerRef = useRef(null);
+  const [visibleCount, setVisibleCount] = useState(exercises?.length || 0);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setVisibleCount(exercises?.length || 0);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [exercises]);
+
+  useEffect(() => {
+    setVisibleCount(exercises?.length || 0);
+  }, [exercises]);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el || !exercises || exercises.length === 0) return;
+    
+    if (el.scrollWidth > el.clientWidth && visibleCount > 1) {
+      setVisibleCount(prev => prev - 1);
+    }
+  }, [visibleCount, exercises]);
+
+  if (!exercises || exercises.length === 0) {
+    return <div style={styles.exerciseTextEmpty}>등록된 운동이 없습니다.</div>;
+  }
+
+  const isTruncated = visibleCount < exercises.length;
+  let text = exercises.slice(0, visibleCount).join(', ');
+  if (isTruncated) {
+    text += `... 총 ${exercises.length}개 운동`;
+  }
+
+  return (
+    <div ref={containerRef} style={styles.exerciseText}>
+      {text}
+    </div>
+  );
+};
 
 const DayPlanSlider = ({ plans = [], nextPlanIndex = 0, onStartWorkout }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -61,7 +103,9 @@ const DayPlanSlider = ({ plans = [], nextPlanIndex = 0, onStartWorkout }) => {
           </div>
         )}
         
-        <Button onClick={() => onStartWorkout(currentPlan.id)} style={{marginTop: '16px'}}>
+        <ExerciseText exercises={currentPlan?.exercises || []} />
+
+        <Button onClick={() => onStartWorkout(currentPlan.id)} style={{marginTop: '8px'}}>
           이 루틴 시작하기
         </Button>
       </div>
@@ -122,6 +166,24 @@ const styles = {
     height: '6px',
     borderRadius: '50%',
     transition: 'background-color 0.2s',
+  },
+  exerciseText: {
+    fontSize: '14px',
+    color: 'var(--text-secondary)',
+    textAlign: 'center',
+    marginTop: '16px',
+    marginBottom: '8px',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    width: '100%',
+  },
+  exerciseTextEmpty: {
+    fontSize: '14px',
+    color: '#9ca3af',
+    textAlign: 'center',
+    marginTop: '16px',
+    marginBottom: '8px',
   }
 };
 

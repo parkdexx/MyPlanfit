@@ -131,7 +131,7 @@ CREATE TABLE IF NOT EXISTS workout_history_sets (
   set_number INT NOT NULL,
   weight_kg DECIMAL(5,2) NOT NULL DEFAULT 0,
   reps INT NOT NULL DEFAULT 0,
-  status ENUM('DONE', 'GIVEN_UP') NOT NULL,
+  status ENUM('PENDING', 'DONE', 'GIVEN_UP') NOT NULL DEFAULT 'PENDING',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (history_exercise_id) REFERENCES workout_history_exercises(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -181,13 +181,13 @@ async function initDatabase() {
   // Add Dummy Dictionary
   try {
     const dummyExercises = [
-      { name: '벤치프레스', bodyPart: '가슴', url: 'https://youtube.com/watch?v=dlx123' },
-      { name: '푸시업', bodyPart: '가슴', url: 'https://youtube.com/watch?v=dlx124' },
-      { name: '스쿼트', bodyPart: '하체', url: 'https://youtube.com/watch?v=dlx125' },
+      { name: '벤치프레스', bodyPart: '가슴,어깨', url: 'https://youtube.com/watch?v=dlx123' },
+      { name: '푸시업', bodyPart: '가슴,어깨,코어', url: 'https://youtube.com/watch?v=dlx124' },
+      { name: '스쿼트', bodyPart: '하체,코어', url: 'https://youtube.com/watch?v=dlx125' },
       { name: '레그프레스', bodyPart: '하체', url: 'https://youtube.com/watch?v=dlx126' },
-      { name: '풀업', bodyPart: '등', url: 'https://youtube.com/watch?v=dlx127' },
-      { name: '렛풀다운', bodyPart: '등', url: 'https://youtube.com/watch?v=dlx128' },
-      { name: '밀리터리 프레스', bodyPart: '어깨', url: 'https://youtube.com/watch?v=dlx129' },
+      { name: '풀업', bodyPart: '등,팔', url: 'https://youtube.com/watch?v=dlx127' },
+      { name: '렛풀다운', bodyPart: '등,팔', url: 'https://youtube.com/watch?v=dlx128' },
+      { name: '밀리터리 프레스', bodyPart: '어깨,가슴', url: 'https://youtube.com/watch?v=dlx129' },
       { name: '바벨컬', bodyPart: '팔', url: 'https://youtube.com/watch?v=dlx130' }
     ];
 
