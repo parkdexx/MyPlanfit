@@ -37,7 +37,10 @@ Check out the latest version here: [MyPlanfit Test Server](https://myplanfit-659
 - **Security First:** Implemented request validation and rate limiting to ensure stable cloud deployment.
 - **Automation:** Includes scripts for exercise video link validation and management.
 
+<br/>
 
 Original service: https://planfit.ai/ko
+
 Original service: https://planfit.ai/ko
+
 Original service: https://planfit.ai/ko

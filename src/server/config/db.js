@@ -8,8 +8,8 @@ const pool = mysql.createPool({
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  // Cloud Run에서 Cloud SQL 연결 시 사용 (/cloudsql/ 접두사 자동 처리)
-  socketPath: process.env.DB_SOCKET_PATH 
+  // Cloud Run에서 Cloud SQL 연결 시 사용 (Windows 환경에서는 비활성화)
+  socketPath: (process.platform !== 'win32' && process.env.DB_SOCKET_PATH) 
     ? (process.env.DB_SOCKET_PATH.startsWith('/cloudsql/') 
         ? process.env.DB_SOCKET_PATH 
         : `/cloudsql/${process.env.DB_SOCKET_PATH}`)

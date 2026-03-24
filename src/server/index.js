@@ -19,7 +19,16 @@ app.set('trust proxy', 1); // Cloud Run (Proxy) 환경에서의 Rate Limiting을
 const PORT = process.env.PORT || 5000;
 
 // ── Middleware ──
-app.use(helmet()); // 기본적인 보안 헤더 적용
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+      "frame-src": ["'self'", "https://www.youtube.com", "https://youtube.com", "https://www.youtube-nocookie.com"],
+      "img-src": ["'self'", "data:", "https://i.ytimg.com", "https://*.youtube.com"],
+    },
+  },
+  referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+})); // 보안 헤더 적용 (YouTube iframe 허용 및 Referrer 허용)
 app.use(cors({
   origin: [
     'http://localhost:5173', // 로컬 개발 환경
@@ -79,7 +88,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 // ── Start Server ──
-const { initYoutubeCron } = require('./cron/youtubeUpdater');
+// const { initYoutubeCron } = require('./cron/youtubeUpdater'); // 더 이상 서버 백그라운드에서 동작하지 않음 (로컬수동실행으로 대체)
 
 const server = app.listen(PORT, async () => {
   console.log(`\n🚀 MyPlanfit Server running on http://localhost:${PORT}`);
@@ -88,7 +97,8 @@ const server = app.listen(PORT, async () => {
 });
 
 // 유튜브 영상 관리를 위한 스케줄러 시작 (매일 새벽 1시) 및 반환된 task 할당
-const youtubeCronTask = initYoutubeCron();
+// const youtubeCronTask = initYoutubeCron(); 
+const youtubeCronTask = null;
 
 // ── Graceful Shutdown (정상 종료 로직) ──
 // PM2, nodemon, Ctrl+C 등으로 프로세스 종료 신호가 들어왔을 때 cron 작업이 무한 증식하지 않도록 처리합니다.
