@@ -25,7 +25,7 @@ const ForgotPassword = () => {
 
     try {
       setIsSending(true);
-      const res = await fetch('http://localhost:5000/api/auth/forgot-password', {
+      const res = await fetch('/api/auth/forgot-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
@@ -34,7 +34,7 @@ const ForgotPassword = () => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
 
-      setSuccessMsg(data.message || '비밀번호 재설정 메일이 발송되었습니다.');
+      setSuccessMsg(data.message || '비밀번호 재설정 이메일이 발송되었습니다.');
     } catch (err) {
       setErrorMsg(err.message);
     } finally {
@@ -44,7 +44,7 @@ const ForgotPassword = () => {
 
   return (
     <div style={styles.container}>
-      <AuthHeader title="비밀번호 찾기" description="가입하신 이메일 주소를 입력해 주세요." />
+      <AuthHeader title="비밀번호 찾기" description="가입하신 이메일 주소를 입력해 주세요" />
 
       <form onSubmit={handleReset} style={styles.formContainer}>
         {errorMsg && <div style={styles.errorAlert}>{errorMsg}</div>}
@@ -53,7 +53,7 @@ const ForgotPassword = () => {
         <Input 
           label="이메일" 
           type="email" 
-          placeholder="이메일을 입력해주세요" 
+          placeholder="이메일을 입력해 주세요" 
           required 
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -62,7 +62,7 @@ const ForgotPassword = () => {
         
         <div style={styles.buttonWrapper}>
           <Button type="submit" disabled={isSending}>
-            {isSending ? '전송 중...' : '재설정 메일 받기'}
+            {isSending ? '전송 중..' : '재설정 이메일 받기'}
           </Button>
         </div>
       </form>

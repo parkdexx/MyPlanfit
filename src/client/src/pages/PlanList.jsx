@@ -10,7 +10,7 @@ const PlanList = () => {
 
   const fetchPlans = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/plans', {
+      const res = await fetch('/api/plans', {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -29,7 +29,7 @@ const PlanList = () => {
   const handleCreatePlan = async () => {
     const defaultName = `새로운 루틴 ${plans.length + 1}`;
     try {
-      const res = await fetch('http://localhost:5000/api/plans/day-plan', {
+      const res = await fetch('/api/plans/day-plan', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -60,7 +60,7 @@ const PlanList = () => {
     }
 
     try {
-      const res = await fetch(`http://localhost:5000/api/plans/day-plan/${plan.id}`, {
+      const res = await fetch(`/api/plans/day-plan/${plan.id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -80,7 +80,7 @@ const PlanList = () => {
         <button style={styles.backButton} onClick={() => navigate('/')}>
           <FiChevronLeft size={24} />
         </button>
-        <h2 style={styles.title}>내 운동 플랜</h2>
+        <h2 style={styles.title}>운동 플랜 목록</h2>
         <div style={{ width: 24 }} /> {/* Spacer */}
       </div>
 
@@ -88,7 +88,7 @@ const PlanList = () => {
         {plans.length === 0 ? (
           <div style={styles.emptyCard}>
             <p>아직 만들어진 루틴이 없습니다.</p>
-            <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>나만의 운동 루틴을 생성해보세요!</p>
+            <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>나만의 운동 루틴을 생성해 보세요!</p>
           </div>
         ) : (
           plans.map(plan => (
@@ -110,7 +110,7 @@ const PlanList = () => {
                 </button>
               </div>
               <div style={styles.planInfo}>
-                <span style={styles.exerciseCountBadge}>포함된 운동: {plan.exercises ? plan.exercises.length : 0}개</span>
+                <span style={styles.exerciseCountBadge}>포함 운동: {plan.exercises ? plan.exercises.length : 0}</span>
               </div>
             </div>
           ))
@@ -120,7 +120,7 @@ const PlanList = () => {
       <div style={styles.bottomBar}>
         <Button onClick={handleCreatePlan} style={{ width: '100%' }}>
           + 새 루틴 만들기
-        </Button>
+</Button>
       </div>
     </div>
   );

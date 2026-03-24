@@ -10,9 +10,12 @@ router.post('/start', authMiddleware, async (req, res) => {
   
   if (!day_plan_id) return res.status(400).json({ error: 'day_plan_id required' });
 
-  // 오늘 날짜 구하기 (YYYY-MM-DD)
+  // 오늘 날짜 구하기 (YYYY-MM-DD) - 현지 기준
   const today = new Date();
-  const todayStr = today.toISOString().split('T')[0];
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const dateStr = String(today.getDate()).padStart(2, '0');
+  const todayStr = `${year}-${month}-${dateStr}`;
 
   const connection = await pool.getConnection();
 
@@ -21,13 +24,28 @@ router.post('/start', authMiddleware, async (req, res) => {
 
     // 이미 오늘 날짜의 history_day가 있는지 확인
     const [existing] = await connection.query(
-      'SELECT id FROM workout_history_days WHERE user_id = ? AND workout_date = ?',
+      'SELECT id, day_plan_id FROM workout_history_days WHERE user_id = ? AND workout_date = ?',
       [user_id, todayStr]
     );
 
     if (existing.length > 0) {
-      await connection.commit();
-      return res.json({ history_day_id: existing[0].id });
+      if (existing[0].day_plan_id !== day_plan_id) {
+        // 사용자가 다른 루틴을 선택한 경우: 기존 기록 삭제 후 새로 덮어쓰기
+        const existingHistoryId = existing[0].id;
+        
+        await connection.query(
+          'DELETE FROM workout_history_sets WHERE history_exercise_id IN (SELECT id FROM workout_history_exercises WHERE history_day_id = ?)',
+          [existingHistoryId]
+        );
+        await connection.query('DELETE FROM workout_history_exercises WHERE history_day_id = ?', [existingHistoryId]);
+        await connection.query('DELETE FROM workout_history_days WHERE id = ?', [existingHistoryId]);
+        
+        // 새 기록 추가를 위해 이후 과정 진행
+      } else {
+        // 같은 루틴을 이어서 하는 경우
+        await connection.commit();
+        return res.json({ history_day_id: existing[0].id });
+      }
     }
 
     // day_plan 이름 가져오기
@@ -57,8 +75,8 @@ router.post('/start', authMiddleware, async (req, res) => {
     for (const exPlan of exercisePlans) {
       // workout_history_exercises 추가
       const [exResult] = await connection.query(
-        'INSERT INTO workout_history_exercises (history_day_id, exercise_name, order_index) VALUES (?, ?, ?)',
-        [historyDayId, exPlan.name, exPlan.order_index]
+        'INSERT INTO workout_history_exercises (history_day_id, exercise_name, youtube_url, order_index) VALUES (?, ?, ?, ?)',
+        [historyDayId, exPlan.name, exPlan.youtube_url || null, exPlan.order_index]
       );
       const historyExId = exResult.insertId;
 

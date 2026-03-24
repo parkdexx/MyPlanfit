@@ -1,55 +1,43 @@
-# MyPlanfit 🏋️‍♂️
+# MyPlanfit
 
-**MyPlanfit** is a goal-oriented workout management application designed to help users create custom workout routines, stay motivated, and maintain a consistent exercise log.
+MyPlanfit is a goal-oriented workout management application designed to help users create custom workout routines and track their progress effectively.
 
-## 🎯 Project Overview
-The primary goal of MyPlanfit is to bridge the gap between planning and execution. It allows users to organize their workouts into a structured hierarchy and provides a seamless "Exercise Mode" to track progress in real-time.
-
-### Key Hierarchy:
-`MY_PLAN` 📂 → `DAY_PLAN` 📂 → `EXERCISE_PLAN` 📂 → `SET_PLAN` 📄
-*(e.g., General Routine → Monday/Chest Day → Bench Press → 80kg / 10 reps)*
+> [!NOTE]
+> **Disclaimer:** This project is a personal toy project created for testing and learning purposes, mimicking the original service [Planfit](https://planfit.ai/ko).
+> 
+> **원본 서비스 안내:** 본 프로젝트는 운동 루틴 관리 서비스인 [Planfit](https://planfit.ai/ko)을 모방하여 테스트 및 학습용으로 제작된 개인 토이 프로젝트입니다.
 
 ---
 
-## ✨ Core Features
-- **Structured Workout Planning:** Create multi-layered plans (Day > Exercise > Sets).
-- **Intuitive Exercise Library:** Categorized by body parts with YouTube-linked video guides.
-- **Smart Set Tracking:** Automatically carries over weight/reps from previous sets for faster logging.
-- **Progress Calendar:** Visualizes workout consistency; click on any date to view detailed historical logs.
-- **Auto-Save:** All progress is saved instantly without the need for a manual "Save" button.
-- **Completion Rewards:** Motivational modals and visual feedback upon finishing a routine.
+## Live Demo
+Check out the latest version here: [MyPlanfit Test Server](https://myplanfit-65988077346.asia-northeast3.run.app/)
 
 ---
 
-## 🛠 Tech Stack
-- **Frontend:** React.js (Vite)
-- **Backend:** Node.js, Express.js
-- **Database:** MySQL
-- **Infrastructure:** Google Cloud Platform (GCP)
-- **Styling:** Modern and Minimalist (Toss-style UI)
-- **Authentication:** Email-based JWT with SMTP verification
+## Core Features
+- **Structured Planning:** Create multi-layered workout plans (Day > Exercise > Sets).
+- **Exercise Library:** Categorized body parts with integrated YouTube video guides.
+- **Smart Tracking:** Automatically carries over weight and reps from previous sets for efficient logging.
+- **Progress Calendar:** Visualize consistency and view detailed historical logs by clicking on specific dates.
+- **Motivational Feedback:** Real-time progress tracking and completion rewards.
 
----
+## Technical Stack
+- **Frontend:** React (Vite)
+- **Backend:** Node.js, Express
+- **Database:** MySQL (Google Cloud SQL)
+- **Infrastructure:** Google Cloud Platform (Cloud Run)
+- **Security:** JWT Authentication, Rate Limiting, CORS, and Helmet integration.
 
-## 🚀 Development Roadmap
+## Project Structure
+- `src/client`: React frontend application.
+- `src/server`: Node.js Express backend API.
 
-### Phase 0-1: Infrastructure & UI Framing
-- Setting up the Vite+React and Node.js skeleton.
-- Designing mockups for Login, Home, and Workout screens.
+## Architecture Highlights
+- **Hierarchical Data Model:** `Plan` → `Day` → `Exercise` → `Set`
+- **Security First:** Implemented request validation and rate limiting to ensure stable cloud deployment.
+- **Automation:** Includes scripts for exercise video link validation and management.
 
-### Phase 2-4: Authentication & Security
-- Implementing secure login/signup with email verification (Gmail SMTP).
-- Password recovery systems and SQL injection prevention.
 
-### Phase 5-7: Core Logic & Exercise Mode
-- Building the Home Dashboard with the Workout Calendar.
-- Developing the Plan Configuration screen (CRUD for routines).
-- Implementing the "Active Workout" mode for real-time set tracking.
-
----
-
-## 🛡 Security & Cost Optimization (GCP)
-To keep the project within the free/low-cost tier and prevent malicious usage:
-- **Rate Limiting:** Implemented on the backend to prevent API abuse and excessive egress costs.
-- **Request Validation:** Strict input validation to prevent SQL Injection and XSS.
-- **GCP Budgets:** Set up automated alerts to monitor cloud spending.
+Original service: https://planfit.ai/ko
+Original service: https://planfit.ai/ko
+Original service: https://planfit.ai/ko

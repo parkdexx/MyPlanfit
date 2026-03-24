@@ -20,6 +20,14 @@ const Signup = () => {
   const [successMsg, setSuccessMsg] = useState('');
   const [timeLeft, setTimeLeft] = useState(300);
   const [isSending, setIsSending] = useState(false);
+  const [capsLockActive, setCapsLockActive] = useState(false);
+  const [isPasswordFocused, setIsPasswordFocused] = useState(false);
+
+  const checkCapsLock = (e) => {
+    if (e.getModifierState) {
+      setCapsLockActive(e.getModifierState('CapsLock'));
+    }
+  };
 
   React.useEffect(() => {
     let timer;
@@ -43,13 +51,13 @@ const Signup = () => {
     setSuccessMsg('');
 
     if (!email.includes('@') || !email.includes('.')) {
-      setErrorMsg('올바른 이메일 형식을 입력해 주세요.');
+      setErrorMsg('올바른 이메일 형식을 입력해 주세요');
       return;
     }
 
     try {
       setIsSending(true);
-      const res = await fetch('http://localhost:5000/api/auth/send-code', {
+      const res = await fetch('/api/auth/send-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
@@ -57,8 +65,8 @@ const Signup = () => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
 
-      setSuccessMsg('인증번호가 이메일로 발송되었습니다.');
-      setTimeLeft(300); // 5분 타이머 리셋
+      setSuccessMsg('인증번호가 이메일로 발송되었습니다');
+      setTimeLeft(300); // 5???머 리셋
       setStep(1); // Proceed to OTP step
     } catch (err) {
       setErrorMsg(err.message);
@@ -73,12 +81,12 @@ const Signup = () => {
     setSuccessMsg('');
 
     if (timeLeft === 0) {
-      setErrorMsg('인증 시간이 만료되었습니다. 인증번호를 다시 발송해주세요.');
+      setErrorMsg('인증 시간이 만료되었습니다. 인증번호를 다시 발송해 주세요.');
       return;
     }
 
     try {
-      const res = await fetch('http://localhost:5000/api/auth/verify-code', {
+      const res = await fetch('/api/auth/verify-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, code: otpCode })
@@ -86,7 +94,7 @@ const Signup = () => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
 
-      setSuccessMsg('이메일 인증 완료! 닉네임과 비밀번호를 설정해주세요.');
+      setSuccessMsg('이메일 인증 완료! 닉네임과 비밀번호를 설정해 주세요.');
       setStep(2); // Proceed to Details step
     } catch (err) {
       setErrorMsg(err.message);
@@ -104,7 +112,7 @@ const Signup = () => {
     }
 
     try {
-      const res = await fetch('http://localhost:5000/api/auth/signup', {
+      const res = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, nickname, password })
@@ -112,8 +120,7 @@ const Signup = () => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
 
-      // 성공 시
-      alert('가입이 완료되었습니다. 로그인 화면으로 이동합니다!');
+      alert('가입이 완료되었습니다. 로그인 화면으로 이동합니다');
       navigate('/login');
     } catch (err) {
       setErrorMsg(err.message);
@@ -142,7 +149,7 @@ const Signup = () => {
         {step === 0 && (
           <div style={styles.buttonWrapper}>
             <Button onClick={handleSendCode} disabled={isSending}>
-              {isSending ? '메일 전송 중...' : '인증번호 발송'}
+              {isSending ? '메일 전송 중..' : '인증번호 발송'}
             </Button>
           </div>
         )}
@@ -161,7 +168,7 @@ const Signup = () => {
 
         {step === 1 && (
           <div style={styles.buttonWrapper}>
-            <Button onClick={handleVerifyCode}>인증 통과하기</Button>
+            <Button onClick={handleVerifyCode}>인증 확인하기</Button>
           </div>
         )}
 
@@ -176,14 +183,25 @@ const Signup = () => {
               value={nickname}
               onChange={(e) => setNickname(e.target.value)}
             />
-            <Input
-              label="비밀번호 (최소 4자)"
-              type="password"
-              placeholder="안전한 비밀번호"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+            <div style={{ position: 'relative' }}>
+              <Input
+                label="비밀번호 (최소 4자)"
+                type="password"
+                placeholder="안전한 비밀번호"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={checkCapsLock}
+                onKeyUp={checkCapsLock}
+                onFocus={() => setIsPasswordFocused(true)}
+                onBlur={() => setIsPasswordFocused(false)}
+              />
+              {isPasswordFocused && capsLockActive && (
+                <div style={styles.capsLockTooltip}>
+                  Caps Lock이 켜져 있습니다.
+                </div>
+              )}
+            </div>
             <div style={styles.buttonWrapper}>
               <Button onClick={handleSignup}>가입 완료</Button>
             </div>
@@ -234,6 +252,19 @@ const styles = {
     marginBottom: '16px',
     textAlign: 'center',
     border: '1px solid #bbf7d0'
+  },
+  capsLockTooltip: {
+    position: 'absolute',
+    right: '0',
+    top: '0',
+    backgroundColor: 'var(--danger)',
+    color: '#fff',
+    fontSize: '11px',
+    fontWeight: '600',
+    padding: '4px 8px',
+    borderRadius: '12px',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+    pointerEvents: 'none',
   },
   buttonWrapper: {
     marginTop: '16px',

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FiSearch, FiPlayCircle } from 'react-icons/fi';
+import { FiSearch, FiPlayCircle, FiX } from 'react-icons/fi';
 import { FaYoutube } from 'react-icons/fa';
 
 const ExerciseSelector = ({ onClose, onSelect }) => {
@@ -9,7 +9,7 @@ const ExerciseSelector = ({ onClose, onSelect }) => {
 
   const fetchExercises = async () => {
     try {
-      const url = filter ? `http://localhost:5000/api/exercises?target=${encodeURIComponent(filter)}` : 'http://localhost:5000/api/exercises';
+      const url = filter ? `/api/exercises?target=${encodeURIComponent(filter)}` : '/api/exercises';
       const res = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -26,35 +26,34 @@ const ExerciseSelector = ({ onClose, onSelect }) => {
     fetchExercises();
   }, [filter, token]);
 
-  const bodyParts = ['전체', '가슴', '등', '어깨', '유산소', '전신', '코어', '팔', '하체'];
+  const bodyParts = ['', '가슴', '등', '하체', '어깨', '팔', '복근', '전신'];
 
   return (
     <div style={styles.overlay}>
       <div style={styles.modal}>
-        
         <div style={styles.header}>
           <h3 style={styles.title}>운동 선택</h3>
-          <button style={styles.closeBtn} onClick={onClose}>✕</button>
+          <button style={styles.closeBtn} onClick={onClose}><FiX /></button>
         </div>
 
         <div style={styles.filterScroll}>
           {bodyParts.map(part => (
-            <button 
-              key={part} 
+            <button
+              key={part}
               style={{
-                ...styles.filterChips, 
-                ...(filter === (part === '전체' ? '' : part) ? styles.filterChipsActive : {})
+                ...styles.filterChips,
+                ...(filter === part ? styles.filterChipActive : {})
               }}
-              onClick={() => setFilter(part === '전체' ? '' : part)}
+              onClick={() => setFilter(part)}
             >
-              {part}
+              {part === '' ? '전체' : part}
             </button>
           ))}
         </div>
 
         <div style={styles.listArea}>
           {exercises.length === 0 ? (
-            <div style={styles.emptyVal}>해당 부위의 운동이 없습니다.</div>
+            <div style={styles.emptyText}>해당하는 운동이 없습니다.</div>
           ) : (
             exercises.map(ex => (
               <div key={ex.id} style={styles.listItem}>
@@ -62,28 +61,29 @@ const ExerciseSelector = ({ onClose, onSelect }) => {
                   <div style={styles.listPart}>{ex.body_part}</div>
                   <div style={styles.listName}>{ex.name}</div>
                 </div>
-                
                 <div style={styles.listActions}>
                   {ex.youtube_url && (
-                    <button 
-                      style={styles.actionBtnOutline} 
-                      onClick={(e) => { e.stopPropagation(); window.open(ex.youtube_url, '_blank'); }}
+                    <button
+                      style={styles.actionBtnOutline}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        window.open(ex.youtube_url, '_blank');
+                      }}
                     >
-                       <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                         <FaYoutube style={{ color: '#FF0000', fontSize: '18px' }} />
-                         <span>영상보기</span>
-                       </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <FaYoutube size={18} color="#FF0000" />
+                        <span>가이드</span>
+                      </div>
                     </button>
                   )}
                   <button style={styles.actionBtnPrimary} onClick={() => onSelect(ex)}>
-                    선택
+                    추가
                   </button>
                 </div>
               </div>
             ))
           )}
         </div>
-
       </div>
     </div>
   );
@@ -92,20 +92,23 @@ const ExerciseSelector = ({ onClose, onSelect }) => {
 const styles = {
   overlay: {
     position: 'fixed',
-    top: 0, left: 0, right: 0, bottom: 0,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     backgroundColor: 'rgba(0,0,0,0.5)',
     zIndex: 100,
     display: 'flex',
     justifyContent: 'center',
-    alignItems: 'center', // center vertically
-    padding: '24px', // prevent touching edges on small screens
+    alignItems: 'center',
+    padding: '24px',
   },
   modal: {
     backgroundColor: '#ffffff',
     width: '100%',
     maxWidth: '480px',
     height: '80vh',
-    borderRadius: '24px', // all corners rounded
+    borderRadius: '24px',
     display: 'flex',
     flexDirection: 'column',
     boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
@@ -129,6 +132,9 @@ const styles = {
     fontSize: '24px',
     color: 'var(--text-secondary)',
     cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   filterScroll: {
     display: 'flex',
@@ -136,7 +142,6 @@ const styles = {
     gap: '8px',
     overflowX: 'auto',
     borderBottom: '1px solid var(--border-color)',
-    // Removed scrollbarWidth: 'none' to allow horizontal scrollbar visibility
   },
   filterChips: {
     flexShrink: 0,
@@ -150,7 +155,7 @@ const styles = {
     cursor: 'pointer',
     transition: 'all 0.2s',
   },
-  filterChipsActive: {
+  filterChipActive: {
     backgroundColor: 'rgba(40, 40, 140, 0.1)',
     borderColor: 'var(--primary-color)',
     color: 'var(--primary-color)',
@@ -160,7 +165,7 @@ const styles = {
     overflowY: 'auto',
     padding: '16px 24px',
   },
-  emptyVal: {
+  emptyText: {
     textAlign: 'center',
     color: 'var(--text-secondary)',
     padding: '40px 0',
@@ -175,7 +180,7 @@ const styles = {
   listText: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '4px'
+    gap: '4px',
   },
   listPart: {
     fontSize: '12px',

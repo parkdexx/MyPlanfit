@@ -11,12 +11,21 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [rememberEmail, setRememberEmail] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [capsLockActive, setCapsLockActive] = useState(false);
+  const [isPasswordFocused, setIsPasswordFocused] = useState(false);
 
-  // 컴포넌트 마운트 시 토큰 확인(자동 로그인) 및 기억된 이메일 불러오기
+  const checkCapsLock = (e) => {
+    if (e.getModifierState) {
+      setCapsLockActive(e.getModifierState('CapsLock'));
+    }
+  };
+
+
+  // 컴포?트 마운?????큰 ?인(?동 로그?? ?기억???메??불러?기
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      // 실제 환경: 서버에 토큰이 유효한지 검증하는 API를 추가로 호출하는 것이 베스트 프랙티스입니다.
+      // 실제 환경: 서버에 토큰 유효성을 검증하는 API를 추가로 호출하는 것이 베스트 프랙티스입니다.
       // 현재는 토큰이 존재하기만 하면 홈으로 이동합니다.
       navigate('/', { replace: true });
     }
@@ -32,14 +41,14 @@ const Login = () => {
     e.preventDefault();
     setErrorMsg('');
 
-    // 단순 유효성 검증
+    // 단순 유효성 검사
     if (!email.includes('@')) {
-      setErrorMsg('올바른 이메일 형식을 입력해주세요.');
+      setErrorMsg('올바른 이메일 형식을 입력해 주세요.');
       return;
     }
 
     try {
-      const response = await fetch('http://localhost:5000/api/auth/login', {
+      const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -56,14 +65,14 @@ const Login = () => {
       // 로그인 성공 시 JWT 저장
       localStorage.setItem('token', data.token);
 
-      // 브라우저 끄더라도 이메일 기억할지 (localStorage)
+      // 브라우저 필드에도 이메일 기억하기 (localStorage)
       if (rememberEmail) {
         localStorage.setItem('rememberedEmail', email);
       } else {
         localStorage.removeItem('rememberedEmail');
       }
 
-      // 홈으로 라우팅
+      // 홈으로 이동
       navigate('/');
       
     } catch (err) {
@@ -81,19 +90,30 @@ const Login = () => {
         <Input 
           label="이메일" 
           type="email" 
-          placeholder="이메일을 입력해주세요" 
+          placeholder="이메일을 입력해 주세요" 
           required 
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
-        <Input 
-          label="비밀번호" 
-          type="password" 
-          placeholder="비밀번호를 입력해주세요" 
-          required 
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+        <div style={{ position: 'relative' }}>
+          <Input 
+            label="비밀번호" 
+            type="password" 
+            placeholder="비밀번호를 입력해 주세요" 
+            required 
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={checkCapsLock}
+            onKeyUp={checkCapsLock}
+            onFocus={() => setIsPasswordFocused(true)}
+            onBlur={() => setIsPasswordFocused(false)}
+          />
+          {isPasswordFocused && capsLockActive && (
+            <div style={styles.capsLockTooltip}>
+              Caps Lock이 켜져 있습니다.
+            </div>
+          )}
+        </div>
         
         <label style={styles.rememberRow}>
           <input 
@@ -102,7 +122,7 @@ const Login = () => {
             checked={rememberEmail}
             onChange={(e) => setRememberEmail(e.target.checked)}
           />
-          <span>이메일 기억하기 (로그인은 자동유지됨)</span>
+          <span>이메일 기억하기 (로그인 시 자동입력)</span>
         </label>
 
         <div style={styles.buttonWrapper}>
@@ -111,7 +131,7 @@ const Login = () => {
       </form>
 
       <div style={styles.linkContainer}>
-        <Link to="/forgot-password" style={styles.link}>비밀번호가 가물가물해요</Link>
+        <Link to="/forgot-password" style={styles.link}>비밀번호가 가물가물해요?</Link>
         <span style={styles.divider}>|</span>
         <Link to="/signup" style={styles.link}>처음이신가요?</Link>
       </div>
@@ -143,6 +163,19 @@ const styles = {
     marginBottom: '16px',
     textAlign: 'center',
     border: '1px solid #ffcccc'
+  },
+  capsLockTooltip: {
+    position: 'absolute',
+    right: '0',
+    top: '0',
+    backgroundColor: 'var(--danger)',
+    color: '#fff',
+    fontSize: '11px',
+    fontWeight: '600',
+    padding: '4px 8px',
+    borderRadius: '12px',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+    pointerEvents: 'none',
   },
   rememberRow: {
     display: 'flex',

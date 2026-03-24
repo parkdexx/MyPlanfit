@@ -18,7 +18,7 @@ const ResetPassword = () => {
 
   useEffect(() => {
     if (!token) {
-      setErrorMsg('유효하지 않은 접근입니다. 올바른 메일 링크를 사용해 주세요.');
+      setErrorMsg('유효하지 않은 접근입니다. 재발송된 메일 링크를 사용해 주세요.');
     }
   }, [token]);
 
@@ -41,7 +41,7 @@ const ResetPassword = () => {
 
     try {
       setIsSubmitting(true);
-      const res = await fetch('http://localhost:5000/api/auth/reset-password', {
+      const res = await fetch('/api/auth/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token, newPassword: password })
@@ -64,7 +64,7 @@ const ResetPassword = () => {
 
   return (
     <div style={styles.container}>
-      <AuthHeader title="새 비밀번호 설정" description="새롭게 사용할 비밀번호를 입력해 주세요." />
+      <AuthHeader title="새 비밀번호 설정" description="새롭게 사용할 비밀번호를 입력해 주세요" />
 
       <form onSubmit={handleSubmit} style={styles.formContainer}>
         {errorMsg && <div style={styles.errorAlert}>{errorMsg}</div>}
@@ -83,7 +83,7 @@ const ResetPassword = () => {
         <Input 
           label="새 비밀번호 확인" 
           type="password" 
-          placeholder="비밀번호 한 번 더 입력" 
+          placeholder="비밀번호를 다시 한번 입력" 
           required 
           value={passwordConfirm}
           onChange={(e) => setPasswordConfirm(e.target.value)}
@@ -92,7 +92,7 @@ const ResetPassword = () => {
         
         <div style={styles.buttonWrapper}>
           <Button type="submit" disabled={!token || isSubmitting || successMsg}>
-            {isSubmitting ? '저장 중...' : '비밀번호 변경하기'}
+            {isSubmitting ? '변경 중..' : '비밀번호 변경하기'}
           </Button>
         </div>
       </form>

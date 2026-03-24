@@ -49,7 +49,7 @@ const PlanEditor = () => {
 
   const fetchPlan = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/plans', {
+      const res = await fetch('/api/plans', {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -74,12 +74,12 @@ const PlanEditor = () => {
   const handleDeleteExercise = async (exId) => {
     const exercise = plan.exercises.find(e => e.id === exId);
     if (exercise.sets && exercise.sets.length > 0) {
-      const confirmMsg = `'${exercise.name}' 아래 등록된 ${exercise.sets.length}개의 세트가 함께 삭제됩니다.\n계속하시겠습니까?`;
+      const confirmMsg = `'${exercise.name}' 아래 기록된 ${exercise.sets.length}개의 세트가 함께 삭제됩니다.\n계속하시겠습니까?`;
       if (!window.confirm(confirmMsg)) return;
     }
 
     try {
-      const res = await fetch(`http://localhost:5000/api/plans/exercise/${exId}`, {
+      const res = await fetch(`/api/plans/exercise/${exId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -92,10 +92,10 @@ const PlanEditor = () => {
   };
 
   const handleAddSet = async (exerciseId) => {
-    // 직전 세트 값 복사 로직:
+    // 직전 ?트 ?복사 로직:
     const exercise = plan.exercises.find(e => e.id === exerciseId);
-    let defaultWeight = 0;
-    let defaultReps = 0;
+    let defaultWeight = 10;
+    let defaultReps = 10;
 
     if (exercise.sets && exercise.sets.length > 0) {
       const lastSet = exercise.sets[exercise.sets.length - 1];
@@ -104,7 +104,7 @@ const PlanEditor = () => {
     }
 
     try {
-      const res = await fetch('http://localhost:5000/api/plans/set', {
+      const res = await fetch('/api/plans/set', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -127,7 +127,7 @@ const PlanEditor = () => {
 
   const handleUpdateSet = async (setId, weight, reps) => {
     try {
-      await fetch(`http://localhost:5000/api/plans/set/${setId}`, {
+      await fetch(`/api/plans/set/${setId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -145,7 +145,7 @@ const PlanEditor = () => {
 
   const handleDeleteSet = async (setId) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/plans/set/${setId}`, {
+      const res = await fetch(`/api/plans/set/${setId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -160,7 +160,7 @@ const PlanEditor = () => {
   const handleExerciseSelected = async (exerciseObj) => {
     setShowSelector(false);
     try {
-      const res = await fetch('http://localhost:5000/api/plans/exercise', {
+      const res = await fetch('/api/plans/exercise', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -184,11 +184,11 @@ const PlanEditor = () => {
 
   const handleRenamePlan = async () => {
     setShowMenu(false);
-    const newName = window.prompt('새로운 루틴 이름을 입력하세요:', plan.name);
+    const newName = window.prompt('새로운 루틴 이름을 입력하세요', plan.name);
     if (!newName || newName.trim() === '' || newName === plan.name) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/plans/day-plan/${plan.id}`, {
+      const res = await fetch(`/api/plans/day-plan/${plan.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -210,12 +210,12 @@ const PlanEditor = () => {
     setShowMenu(false);
     if (!plan.exercises || plan.exercises.length === 0) return;
 
-    if (!window.confirm('정말로 이 루틴에 등록된 모든 운동을 비우시겠습니까?\n(이 작업은 되돌릴 수 없습니다)')) return;
+    if (!window.confirm('정말 이 루틴의 모든 운동을 비우시겠습니까?\n(삭제 작업은 되돌릴 수 없습니다)')) return;
 
     try {
       await Promise.all(
         plan.exercises.map(ex =>
-          fetch(`http://localhost:5000/api/plans/exercise/${ex.id}`, {
+          fetch(`/api/plans/exercise/${ex.id}`, {
             method: 'DELETE',
             headers: { Authorization: `Bearer ${token}` }
           })
@@ -233,7 +233,7 @@ const PlanEditor = () => {
     if (!window.confirm(`'${plan.name}' 루틴 전체를 정말 삭제하시겠습니까?`)) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/plans/day-plan/${plan.id}`, {
+      const res = await fetch(`/api/plans/day-plan/${plan.id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -247,7 +247,7 @@ const PlanEditor = () => {
     }
   };
 
-  if (!plan) return <div style={styles.container}><div style={{ padding: 24 }}>로딩 중...</div></div>;
+  if (!plan) return <div style={styles.container}><div style={{ padding: 24 }}>로딩 중..</div></div>;
 
   return (
     <div style={styles.container}>
@@ -266,7 +266,7 @@ const PlanEditor = () => {
             <div style={styles.dropdownMenu}>
               <button style={styles.menuItem} onClick={handleRenamePlan}>이름 변경하기</button>
               <button style={styles.menuItem} onClick={handleClearExercises}>모든 운동 비우기</button>
-              <button style={{ ...styles.menuItem, color: 'var(--danger)' }} onClick={handleDeleteRoutine}>루틴 비우기(삭제)</button>
+              <button style={{ ...styles.menuItem, color: 'var(--danger)' }} onClick={handleDeleteRoutine}>루틴 삭제하기</button>
             </div>
           )}
         </div>
@@ -276,14 +276,14 @@ const PlanEditor = () => {
       <div style={styles.editorArea} ref={editorRef}>
         {plan.exercises && plan.exercises.length === 0 ? (
           <div style={styles.emptyCard}>
-            아직 추가된 운동이 없습니다. <br />아래 + 버튼을 눌러 운동 종목을 추가해보세요.
+            아직 추가된 운동이 없습니다. <br />아래 + 버튼을 눌러 운동 종목을 추가해 보세요.
           </div>
         ) : (
           plan.exercises.map((ex, exIdx) => (
             <div key={ex.id} style={styles.exerciseCard}>
               <div style={styles.exHeader}>
                 <div style={styles.exTitleContainer}>
-                  <div style={styles.exBadge}>{ex.body_part || '기타'}</div>
+                  <div style={styles.exBadge}>{ex.body_part || '기본'}</div>
                   <h3 style={styles.exTitle}>{ex.name}</h3>
                 </div>
                 <div style={styles.exActions}>
@@ -319,15 +319,15 @@ const PlanEditor = () => {
                     <span style={styles.unitText}>회</span>
 
                     <button style={styles.deleteSetBtn} onClick={() => handleDeleteSet(set.id)}>
-                      ✕
-                    </button>
+                      삭제
+</button>
                   </div>
                 ))}
               </div>
 
-              <button 
+              <button
                 id={`add-set-btn-${ex.id}`}
-                style={styles.addSetBtn} 
+                style={styles.addSetBtn}
                 onClick={() => handleAddSet(ex.id)}
               >
                 + 세트 추가
@@ -340,7 +340,7 @@ const PlanEditor = () => {
       {/* Bottom Bar: Add Exercise Button */}
       <div style={styles.bottomBar}>
         <Button style={{ width: '100%' }} onClick={() => setShowSelector(true)}>
-          <FiPlus size={20} style={{ marginRight: '8px', verticalAlign: 'middle' }} /> 운동 항목 추가
+          <FiPlus size={20} style={{ marginRight: '8px', verticalAlign: 'middle' }} /> 운동 종목 추가
         </Button>
       </div>
 
@@ -503,7 +503,7 @@ const styles = {
     color: 'var(--text-secondary)',
   },
   inputField: {
-    width: '60px',
+    width: '90px',
     padding: '8px',
     textAlign: 'center',
     border: '1px solid var(--border-color)',

@@ -15,12 +15,12 @@ const Home = () => {
   const [dayPlans, setDayPlans] = useState([]);
   const [nextPlanIndex, setNextPlanIndex] = useState(0);
   const [checkedDates, setCheckedDates] = useState([]);
-  
+
   // States for Calendar control
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth() + 1);
   const [selectedDate, setSelectedDate] = useState(null);
-  
+
   // State for History
   const [historyData, setHistoryData] = useState(null);
 
@@ -33,7 +33,7 @@ const Home = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/home/profile', {
+        const res = await fetch('/api/home/profile', {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (res.ok) {
@@ -61,7 +61,7 @@ const Home = () => {
   useEffect(() => {
     const fetchPlans = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/home/day-plans', {
+        const res = await fetch('/api/home/day-plans', {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (res.ok) {
@@ -80,7 +80,7 @@ const Home = () => {
   useEffect(() => {
     const fetchCalendar = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/home/calendar?year=${currentYear}&month=${currentMonth}`, {
+        const res = await fetch(`/api/home/calendar?year=${currentYear}&month=${currentMonth}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (res.ok) {
@@ -103,7 +103,7 @@ const Home = () => {
 
     const fetchHistory = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/home/history?date=${selectedDate}`, {
+        const res = await fetch(`/api/home/history?date=${selectedDate}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (res.ok) {
@@ -179,7 +179,7 @@ const Home = () => {
           <button style={styles.profileButton} onClick={() => setIsMenuOpen(!isMenuOpen)}>
             <FiUser size={24} />
           </button>
-          
+
           {isMenuOpen && (
             <div style={styles.dropdownMenu}>
               <div style={styles.profileInfo}>
@@ -187,17 +187,17 @@ const Home = () => {
                 <div style={styles.profileEmail}>{userProfile.email}</div>
               </div>
               <div style={styles.menuDivider}></div>
-              <button 
-                style={styles.menuItem} 
-                onClick={() => alert('개인 정보 설정 기능은 추후 개발 예정입니다.')}
+              <button
+                style={styles.menuItem}
+                onClick={() => alert('개인 정보 수정 기능은 추후 개발 예정입니다.')}
               >
-                <FiSettings style={{marginRight: '8px'}} /> 개인 정보 설정
+                <FiSettings style={{ marginRight: '8px' }} /> 개인 정보 수정
               </button>
-              <button 
-                style={{...styles.menuItem, color: 'var(--danger)'}} 
+              <button
+                style={{ ...styles.menuItem, color: 'var(--danger)' }}
                 onClick={handleLogout}
               >
-                <FiLogOut style={{marginRight: '8px'}} /> 로그아웃
+                <FiLogOut style={{ marginRight: '8px' }} /> 로그아웃
               </button>
             </div>
           )}
@@ -205,21 +205,21 @@ const Home = () => {
       </div>
 
       <div style={styles.header}>
-        <h2 style={styles.title}>내 플랜</h2>
-        <button style={styles.setupButton} onClick={handleDayPlanSetup}>설정</button>
+        <h2 style={styles.title}>운동 플랜</h2>
+        <button style={styles.setupButton} onClick={handleDayPlanSetup}>플랜 설정</button>
       </div>
 
-      <DayPlanSlider 
-        plans={dayPlans} 
-        nextPlanIndex={nextPlanIndex} 
-        onStartWorkout={handleStartWorkout} 
+      <DayPlanSlider
+        plans={dayPlans}
+        nextPlanIndex={nextPlanIndex}
+        onStartWorkout={handleStartWorkout}
       />
 
       <div style={styles.calendarSection}>
         <h3 style={styles.sectionTitle}>운동 기록</h3>
-        <Calendar 
-          year={currentYear} 
-          month={currentMonth} 
+        <Calendar
+          year={currentYear}
+          month={currentMonth}
           checkedDates={checkedDates}
           selectedDate={selectedDate}
           onDateClick={handleDateClick}
@@ -229,11 +229,11 @@ const Home = () => {
           onSelectYear={handleSelectYear}
           onSelectMonth={handleSelectMonth}
         />
-        
+
         {selectedDate && historyData && (
-          <WorkoutHistoryBoard 
-            date={selectedDate} 
-            data={historyData} 
+          <WorkoutHistoryBoard
+            date={selectedDate}
+            data={historyData}
             onClose={() => setSelectedDate(null)}
           />
         )}

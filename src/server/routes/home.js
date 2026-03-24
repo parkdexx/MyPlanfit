@@ -88,12 +88,11 @@ router.get('/calendar', async (req, res) => {
     }
 
     // YY-MM 형태 만들기
-    const startObj = new Date(year, month - 1, 1);
     const endObj = new Date(year, month, 0); // 다음 달 0일 = 이달 마지막 일
     
-    // YYYY-MM-DD
-    const startStr = startObj.toISOString().split('T')[0];
-    const endStr = endObj.toISOString().split('T')[0];
+    // YYYY-MM-DD - 타임존 처리 없이 서버 기준 날짜 생성
+    const startStr = `${year}-${String(month).padStart(2, '0')}-01`;
+    const endStr = `${year}-${String(month).padStart(2, '0')}-${String(endObj.getDate()).padStart(2, '0')}`;
 
     const [rows] = await pool.query(
       'SELECT workout_date FROM workout_history_days WHERE user_id = ? AND workout_date BETWEEN ? AND ?',
