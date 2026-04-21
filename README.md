@@ -14,6 +14,38 @@ Check out the latest version here: [MyPlanfit Test Server](https://myplanfit-659
 
 ---
 
+## Screenshots & Features
+
+### 1. Signup Process
+<img src="./assets/01_login.png" width="150" alt="Signup Screen" />
+
+- **Step-by-Step UI**: Implements a smooth, multi-step signup form progressing from Email Input ➔ OTP Verification ➔ Nickname & Password Setup.
+- **Email Verification (OTP)**: Sends a secure 6-digit verification code via REST API, complemented by a 5-minute client-side countdown timer for secure authentication.
+- **UX Optimization**: Features real-time input validation, visual success/error feedback alerts, and proactive tooltips such as CapsLock detection during password input.
+
+### 2. Home Dashboard
+<img src="./assets/02_main.png" width="150" alt="Home Screen" />
+
+- **Day Plan Slider**: Displays a horizontally swipeable slider (`.DayPlanSlider`) of user-created workout routines, allowing users to start their sessions immediately.
+- **Workout History Calendar**: Visually highlights completed workout dates on an interactable calendar (`checkedDates`). Clicking a specific date displays a detailed history log of the session.
+- **Persistent Authentication**: Dynamically fetches and renders the user's profile information securely using JWT tokens stored securely in the browser's local storage.
+
+### 3. Workout Progress
+<img src="./assets/03_exercise.png" width="150" alt="Workout Progress Screen" />
+
+- **Real-time Tracker**: Clearly indicates the current set number, target weight (kg), and reps. Controls workout progression through standard "Complete" and "Skip" state actions.
+- **Embedded Video Guides**: Uses Regex to automatically extract video IDs from YouTube URLs, seamlessly embedding a responsive iframe guide directly inside the view.
+- **Dynamic State Calculation**: Instantly identifies pending target sets (`PENDING`) and dynamically recalculates the imminent next exercises on any state changes, smoothly auto-advancing the UI.
+
+### 4. Plan Editor
+<img src="./assets/04_plan.png" width="150" alt="Plan Editor Screen" />
+
+- **Hierarchical Management**: Empowers users to search and assign multiple exercise categories to a single daily plan, with granular control over generating and editing individual target sets.
+- **Smart Set Formatting**: Eliminates repetitive data entry workflows by automatically copying the previous set's target weight and rep numbers when initializing a new set (`defaultWeight`, `defaultReps`).
+- **Interactive Modals & Focus States**: Integrates a targeted exercise selection modal and incorporates smooth window auto-scrolling animations (`scrollIntoView`, `smooth`) that gracefully track newly appended DOM elements.
+
+---
+
 ## Core Features
 - **Structured Planning:** Create multi-layered workout plans (Day > Exercise > Sets).
 - **Exercise Library:** Categorized body parts with integrated YouTube video guides.
@@ -38,9 +70,5 @@ Check out the latest version here: [MyPlanfit Test Server](https://myplanfit-659
 - **Automation:** Includes scripts for exercise video link validation and management.
 
 <br/>
-
-Original service: https://planfit.ai/ko
-
-Original service: https://planfit.ai/ko
 
 Original service: https://planfit.ai/ko
