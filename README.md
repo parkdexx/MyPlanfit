@@ -12,6 +12,9 @@ MyPlanfit is a goal-oriented workout management application designed to help use
 ## Live Demo
 Check out the latest version here: [MyPlanfit Test Server](https://myplanfit-65988077346.asia-northeast3.run.app/)
 
+> [!CAUTION]
+> Termination of live server operation due to GCP disconnection (2026-06-04)
+
 ---
 
 ## Screenshots & Features
@@ -72,3 +75,6 @@ Check out the latest version here: [MyPlanfit Test Server](https://myplanfit-659
 <br/>
 
 Original service: https://planfit.ai/ko
+
+> [!CAUTION]
+> Termination of live server operation due to GCP disconnection (2026-06-04)
